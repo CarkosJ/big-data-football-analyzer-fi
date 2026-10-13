@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>BIG DATA FOOTBALL ANALYZER — Calculadora FI</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121c2e;--line:#29364c;--text:#f3f6fc;--muted:#aab7ca;--green:#35d07f;--blue:#69a8ff;--yellow:#ffd166;--red:#ff8585}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(160deg,#0b1220,#101b2d);font-family:Arial,Helvetica,sans-serif;color:var(--text);padding:14px 14px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:760px;margin:0 auto}
+header{padding:16px 4px 8px}
+h1{font-size:clamp(1.45rem,5vw,2rem);line-height:1.15;margin:0 0 8px}
+h2{font-size:1.08rem;margin:0 0 14px}
+p{color:var(--muted);line-height:1.45}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:13px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{display:block;font-size:.87rem;color:var(--muted);margin-bottom:6px}
+input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0b1424;color:var(--text);font-size:1rem}
+button{border:0;border-radius:11px;padding:13px 15px;font-size:1rem;font-weight:700;cursor:pointer}
+.primary{background:var(--green);color:#062013;width:100%;margin-top:14px}
+.secondary{background:#25344c;color:var(--text);width:100%;margin-top:9px}
+.factor{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#0d1728}
+.factor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.factor-head label{margin:0;color:var(--text);font-weight:bold}
+.factor-head input{width:20px;height:20px;accent-color:var(--green)}
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.result{background:#0b1424;border:1px solid var(--line);padding:13px;border-radius:12px;min-width:0}
+.result span{display:block;color:var(--muted);font-size:.8rem;margin-bottom:8px}
+.result strong{font-size:1.3rem;overflow-wrap:anywhere}
+.big{grid-column:1/-1;border-color:#2d8059}
+.big strong{font-size:2rem;color:var(--green)}
+.good{color:var(--green)}.warn{color:var(--yellow)}.bad{color:var(--red)}
+.note{font-size:.83rem;color:var(--muted)}
+.status{display:inline-block;border-radius:999px;padding:5px 10px;font-size:.82rem;font-weight:bold;background:#25344c}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions button{flex:1}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.card{padding:13px}.result strong{font-size:1.18rem}.big strong{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>⚽ BIG DATA FOOTBALL ANALYZER</h1>
+<p>Calculadora de probabilidad base, FI, FI-E, FA, probabilidad final, cuota justa y Edge.</p>
+<div class="status">Versión móvil · Guarda tus datos en este dispositivo</div>
+</header>
+
+<section class="card">
+<h2>1. Mercado y datos históricos</h2>
+<div class="grid">
+<div><label for="match">Partido (opcional)</label><input id="match" placeholder="Ej. Local vs Visitante"></div>
+<div><label for="market">Mercado</label><select id="market">
+<option>Más de 0.5 goles</option><option selected>Más de 1.5 goles</option><option>Más de 2.5 goles</option><option>Ambos equipos marcan</option><option>Local gana o empata</option><option>Visitante gana o empata</option><option>Más de 6.5 córners</option><option>Más de 7.5 córners</option><option>Más de 8.5 córners</option><option>Otro mercado</option>
+</select></div>
+<div><label for="sample">Partidos analizados</label><input id="sample" type="number" min="1" step="1" value="10"></div>
+<div><label for="hits">Partidos que cumplieron</label><input id="hits" type="number" min="0" step="1" value="8"></div>
+<div><label for="odds">Cuota ofrecida</label><input id="odds" type="number" min="1.01" step="0.01" value="1.40"></div>
+<div><label for="notes">Notas (opcional)</label><input id="notes" placeholder="Bajas, forma, local/visitante..."></div>
+</div>
+<p class="note">La PB se calcula como partidos favorables ÷ partidos analizados. Introduce una muestra que corresponda al mercado evaluado.</p>
+</section>
+
+<section class="card">
+<h2>2. Factores de ajuste</h2>
+<p class="note">Activa o desactiva cada factor. Si está desactivado, se aplica 1.00 y no modifica la PB. Los valores son editables para que uses tus criterios.</p>
+<div class="factor">
+<div class="factor-head"><label for="useFI">FI — Factor de impacto</label><input id="useFI" type="checkbox" checked aria-label="Activar FI"></div>
+<div class="grid"><div><label for="fi">Multiplicador FI</label><select id="fi"><option value="1">1.00 — sin reducción</option><option value="0.98">0.98</option><option value="0.96">0.96</option><option value="0.93">0.93</option><option value="0.89">0.89</option><option value="0.84">0.84</option><option value="0.78">0.78</option></select></div><div><label>Aplicación</label><input id="fiStatus" value="Activo" readonly></div></div>
+</div>
+<div class="factor">
+<div class="factor-head"><label for="useFIE">FI-E — Factor de evaluación</label><input id="useFIE" type="checkbox" checked aria-label="Activar FI-E"></div>
+<div class="grid"><div><label for="fie">Multiplicador FI-E</label><select id="fie"><option value="1">1.00 — sin ajuste</option><option value="0.98">0.98</option><option value="0.96" selected>0.96</option><option value="0.93">0.93</option><option value="0.89">0.89</option><option value="0.84">0.84</option></select></div><div><label>Aplicación</label><input id="fieStatus" value="Activo" readonly></div></div>
+</div>
+<div class="factor">
+<div class="factor-head"><label for="useFA">FA — Factor de ajuste</label><input id="useFA" type="checkbox" checked aria-label="Activar FA"></div>
+<div class="grid"><div><label for="fa">Multiplicador FA</label><select id="fa"><option value="0.94">0.94</option><option value="0.96">0.96</option><option value="0.98" selected>0.98</option><option value="1">1.00 — sin ajuste</option><option value="1.02">1.02</option><option value="1.04">1.04</option><option value="1.06">1.06</option></select></div><div><label>Aplicación</label><input id="faStatus" value="Activo" readonly></div></div>
+</div>
+<button class="primary" onclick="calculate()">Calcular probabilidad final</button>
+<button class="secondary" onclick="saveData()">Guardar datos en este teléfono</button>
+<button class="secondary" onclick="resetAll()">Restablecer ejemplo</button>
+</section>
+
+<section class="card">
+<h2>3. Resultados</h2>
+<div class="results">
+<div class="result"><span>PB — Probabilidad base</span><strong id="pb">80.00%</strong></div>
+<div class="result big"><span>PF — Probabilidad final estimada</span><strong id="pf">75.34%</strong></div>
+<div class="result"><span>Cuota justa según PF</span><strong id="fair">1.33</strong></div>
+<div class="result"><span>Probabilidad implícita</span><strong id="implied">71.43%</strong></div>
+<div class="result"><span>Edge vs. cuota ofrecida</span><strong id="edge">+3.91 puntos</strong></div>
+<div class="result"><span>Valor esperado estimado</span><strong id="ev">+5.48%</strong></div>
+<div class="result"><span>Semáforo orientativo</span><strong id="traffic" class="good">VERDE</strong></div>
+<div class="result"><span>Multiplicador combinado</span><strong id="combined">0.942</strong></div>
+</div>
+<p id="summary" class="note">La probabilidad final es una estimación ajustada, no una garantía.</p>
+</section>
+
+<section class="card">
+<h2>4. Resumen para copiar</h2>
+<textarea id="report" rows="8" readonly style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0b1424;color:var(--text);font: .92rem/1.45 Arial"></textarea>
+<div class="actions"><button class="primary" onclick="copyReport()">Copiar resumen</button><button class="secondary" onclick="shareReport()">Compartir</button></div>
+<p id="copyMsg" class="note" aria-live="polite"></p>
+</section>
+
+<footer><p class="note"><strong>Nota:</strong> esta herramienta no descarga estadísticas automáticamente. La calidad de la PB depende de los datos introducidos. FI, FI-E y FA deben basarse en criterios consistentes y comprobados con resultados históricos; evita penalizar dos veces el mismo factor. El Edge positivo no garantiza rentabilidad.</p></footer>
+</main>
+<script>
+const ids=['match','market','sample','hits','odds','notes','useFI','fi','useFIE','fie','useFA','fa'];
+const $=id=>document.getElementById(id);
+const pct=n=>Number.isFinite(n)?(n*100).toFixed(2)+'%':'—';
+const num=n=>Number.isFinite(n)?n.toFixed(2):'—';
+function values(){
+ const total=Number($('sample').value),hits=Number($('hits').value),odds=Number($('odds').value);
+ if(!Number.isInteger(total)||total<1||!Number.isInteger(hits)||hits<0||hits>total||!Number.isFinite(odds)||odds<=1) throw Error('Revisa los datos: total entero mayor que 0, aciertos entre 0 y el total, y cuota mayor que 1.');
+ const pb=hits/total, fi=$('useFI').checked?Number($('fi').value):1, fie=$('useFIE').checked?Number($('fie').value):1, fa=$('useFA').checked?Number($('fa').value):1;
+ const pf=Math.min(1,pb*fi*fie*fa), implied=1/odds, fair=pf>0?1/pf:NaN, edge=pf-implied, ev=(pf*odds-1)*100;
+ return {total,hits,odds,pb,fi,fie,fa,pf,implied,fair,edge,ev,mult:fi*fie*fa};
+}
+function calculate(){
+ try{
+ const d=values();
+ $('fiStatus').value=$('useFI').checked?'Activo':'Desactivado (1.00)';
+ $('fieStatus').value=$('useFIE').checked?'Activo':'Desactivado (1.00)';
+ $('faStatus').value=$('useFA').checked?'Activo':'Desactivado (1.00)';
+ $('pb').textContent=pct(d.pb);$('pf').textContent=pct(d.pf);$('fair').textContent=d.pf>0?num(d.fair):'No finita';
+ $('implied').textContent=pct(d.implied);$('edge').textContent=(d.edge>=0?'+':'')+(d.edge*100).toFixed(2)+' puntos';
+ $('ev').textContent=(d.ev>=0?'+':'')+d.ev.toFixed(2)+'%';$('combined').textContent=d.mult.toFixed(3);
+ const traffic=$('traffic');
+ if(d.edge>=0.05){traffic.textContent='VERDE';traffic.className='good'}
+ else if(d.edge>=0){traffic.textContent='AMARILLO';traffic.className='warn'}
+ else{traffic.textContent='ROJO';traffic.className='bad'}
+ const match=$('match').value.trim()||'Partido no especificado';
+ $('summary').textContent=`${match} · ${$('market').value}. PB ${pct(d.pb)} × FI ${d.fi.toFixed(2)} × FI-E ${d.fie.toFixed(2)} × FA ${d.fa.toFixed(2)} = PF ${pct(d.pf)}.`;
+ $('report').value=`⚽ BIG DATA FOOTBALL ANALYZER\nPartido: ${match}\nMercado: ${$('market').value}\nMuestra: ${d.hits}/${d.total} partidos favorables\nPB: ${pct(d.pb)}\nFI: ${d.fi.toFixed(2)} | FI-E: ${d.fie.toFixed(2)} | FA: ${d.fa.toFixed(2)}\nPF: ${pct(d.pf)}\nCuota ofrecida: ${d.odds.toFixed(2)}\nCuota justa: ${d.pf>0?num(d.fair):'No finita'}\nProbabilidad implícita: ${pct(d.implied)}\nEdge: ${(d.edge*100>=0?'+':'')+(d.edge*100).toFixed(2)} puntos\nEV estimado: ${(d.ev>=0?'+':'')+d.ev.toFixed(2)}%\nSemáforo orientativo: ${traffic.textContent}\nNotas: ${$('notes').value||'—'}\n\nLa probabilidad es una estimación, no una garantía.`;
+ }catch(e){alert(e.message)}
+}
+function saveData(){
+ calculate();
+ const data={};ids.forEach(id=>data[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);
+ try{localStorage.setItem('bdfa_mobile_data',JSON.stringify(data));$('copyMsg').textContent='Datos guardados en este navegador de este dispositivo.'}
+ catch(e){$('copyMsg').textContent='No se pudieron guardar los datos en este navegador.'}
+}
+function loadData(){
+ try{const d=JSON.parse(localStorage.getItem('bdfa_mobile_data')||'null');if(d)ids.forEach(id=>{if(d[id]!==undefined){if($(id).type==='checkbox')$(id).checked=d[id];else $(id).value=d[id]}})}catch(e){}
+}
+function resetAll(){
+ $('match').value='';$('market').value='Más de 1.5 goles';$('sample').value=10;$('hits').value=8;$('odds').value=1.40;$('notes').value='';
+ $('useFI').checked=true;$('fi').value='1';$('useFIE').checked=true;$('fie').value='0.96';$('useFA').checked=true;$('fa').value='0.98';
+ localStorage.removeItem('bdfa_mobile_data');calculate();$('copyMsg').textContent='Ejemplo restablecido.';
+}
+async function copyReport(){
+ try{await navigator.clipboard.writeText($('report').value);$('copyMsg').textContent='Resumen copiado.'}
+ catch(e){$('report').focus();$('report').select();$('copyMsg').textContent='Selecciona y copia el texto del resumen.'}
+}
+async function shareReport(){
+ const text=$('report').value;
+ if(navigator.share){try{await navigator.share({title:'BIG DATA FOOTBALL ANALYZER',text})}catch(e){}}
+ else{copyReport()}
+}
+loadData();calculate();
+ids.forEach(id=>$(id).addEventListener('change',calculate));
+</script>
+</body>
+</html>
